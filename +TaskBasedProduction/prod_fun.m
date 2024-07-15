@@ -43,4 +43,5 @@ function [q, xT] = prod_fun(l, theta, kappa, z, alphaVec)
     % Calculate q and xT
     q = exp(x_opt(1));
     xT = cumsum(exp(x_opt(2:end)));
+    xT=xT';
 end

@@ -15,8 +15,8 @@ function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp_general(xT, l, q
     H = length(l);
     rho_h = zeros(H, 1);
     s_h = (MPL .* l) / q;
-    epsilon_h_sub = NaN(H, H);
-    epsilon_h_compl = NaN(H, H);
+    epsilon_h_sub = zeros(H, H);
+    epsilon_h_compl = zeros(H, H);
     xT = [xT; Inf];  % Add highest threshold for highest worker type
 
     e_h_T = zeros(H, 1);
@@ -29,12 +29,14 @@ function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp_general(xT, l, q
 
     syms x;
     for h = 1:H-1
-        % Compute the derivative of log(e_{h+1} / e_h) with respect to x and evaluate at xT[h]
-        log_expr = log(e_h{h+1}(x) / e_h{h}(x));
-        diff_log_expr = diff(log_expr, x);
-        log_derivative = double(subs(diff_log_expr, x, xT(h)));
-
-        rho_h(h) = b_g_T(h) * MPL(h) * (1 / e_h_T(h)) * (1 / log_derivative);
+         % Define the log expression as a function handle
+    log_expr = @(x) log(e_h{h+1}(x) / e_h{h}(x));
+    
+    % Compute the numerical derivative of the log expression at xT(h)
+    log_derivative = TaskBasedProduction.numerical_derivative(log_expr, xT(h));
+    
+    % Compute rho_h(h) using the derived log_derivative
+    rho_h(h) = b_g_T(h) * MPL(h) * (1 / e_h_T(h)) * (1 / log_derivative);
     end
 
     for h = 1:H

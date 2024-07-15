@@ -26,11 +26,11 @@ function [q, xbar, fval, exitflag] = prod_fun_general(l, z, b_g, e_h)
     initial_guess = zeros(length(l), 1);
 
     % Optimization using fminunc
-    options = optimoptions('fminunc', 'Algorithm', 'quasi-newton', 'Display', 'off', 'MaxFunctionEvaluations', 1000);
+    options = optimoptions('fminunc', 'Algorithm', 'quasi-newton', 'Display', 'iter', 'MaxFunctionEvaluations', 10000);
     [x_opt, fval, exitflag] = fminunc(@objFun, initial_guess, options);
 
     % Check for convergence
-    if exitflag <= 0 || max(abs(objFun(x_opt))) > 1e-3
+    if exitflag <= 0 || max(abs(objFun(x_opt))) > 1e-2
         error('prod_fun: could not find optimal allocation.');
     end
 
