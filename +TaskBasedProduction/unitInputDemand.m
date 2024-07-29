@@ -1,6 +1,4 @@
-function l = unitInputDemand(theta, kappa, z, alphaVec, xT, skipParamChecks)
-    % unitInputDemand Calculates unit labor demands
-    % 
+function labor_input = unitInputDemand(xT,theta, kappa, z, alphaVec, skipParamChecks) 
     % Calculates unit labor demands given blueprint scale theta, blueprint shape kappa,
     % productivity z, an array of comparative advantage values alphaVec with H elements
     % (one for each worker type), and an array xT of H-1 thresholds in task space.
@@ -14,7 +12,7 @@ function l = unitInputDemand(theta, kappa, z, alphaVec, xT, skipParamChecks)
     %   skipParamChecks - flag to skip parameter checks (boolean)
     %
     % Output:
-    %   l - unit labor demands (vector)
+    %   labor_input - unit labor demands (vector)
 
     % Assign default value to skipParamChecks if not provided
     if nargin < 6
@@ -30,19 +28,19 @@ function l = unitInputDemand(theta, kappa, z, alphaVec, xT, skipParamChecks)
     end
 
     H = length(xT) + 1;
-    l = zeros(H, 1);
+    labor_input = zeros(H, 1);
     xT = [0.0; xT(:); Inf]; % Add lowest and highest thresholds
 
     for h = 1:H
         alpha = alphaVec(h);
         upsilon = alpha + 1/theta;
         if upsilon > 0.0
-            l(h) = TaskBasedProduction.component_positive_ups(upsilon, kappa, xT(h), xT(h+1)) / upsilon^kappa;
+            labor_input(h) = TaskBasedProduction.component_positive_ups(upsilon, kappa, xT(h), xT(h+1)) / upsilon^kappa;
         elseif upsilon == 0.0
-            l(h) = (xT(h+1)^kappa - xT(h)^kappa) / (kappa * gamma(kappa));
+            labor_input(h) = (xT(h+1)^kappa - xT(h)^kappa) / (kappa * gamma(kappa));
         else
-            l(h) = TaskBasedProduction.component_negative_ups(upsilon, kappa, xT(h), xT(h+1));
+            labor_input(h) = TaskBasedProduction.component_negative_ups(upsilon, kappa, xT(h), xT(h+1));
         end
     end
-    l = l / (z * theta^kappa);
+    labor_input = labor_input / (z * theta^kappa);
 end
