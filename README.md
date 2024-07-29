@@ -94,14 +94,14 @@ disp(epsilon_h_compl_gen);
 ```
 ## Functions and Features
 # 1) **unitInputDemand**
-Calculates unit labor demands given blueprint scale `θ`, blueprint shape `κ`, productivity `z`, an array of comparative advantage values `αVec` with H elements (one for each worker type), and an array `xT` of H-1 thresholds in task space.
+Calculates unit labor demands given blueprint scale `theta`, blueprint shape `kappa`, productivity `z`, an array of comparative advantage values `alphaVec` with H elements (one for each worker type), and an array `xT` of H-1 thresholds in task space.
 
 # Arguments
 - `xT`: An array of H-1 thresholds in task space.
-- `θ`: Blueprint scale parameter.
-- `κ`: Blueprint shape parameter.
+- `theta`: Blueprint scale parameter.
+- `kappa`: Blueprint shape parameter.
 - `z`: Productivity parameter.
-- `αVec`: An array of comparative advantage values with H elements.
+- `alphaVec`: An array of comparative advantage values with H elements.
 - `skipParamChecks`: A boolean indicating whether to skip parameter checks (default is false).
 
 # Returns
@@ -116,10 +116,10 @@ Generate an initial guess for the optimization problem in `prod_fun` such that t
 
 # Arguments
 - `labor_input`: The observed labor input for each task.
-- `θ`: The scale parameter of the gamma distribution.
-- `κ`: The shape parameter of the gamma distribution.
+- `theta`: The scale parameter of the gamma distribution.
+- `kappa`: The shape parameter of the gamma distribution.
 - `z`: A scaling factor for the labor input.
-- `αVec`: An array of task-specific parameters.
+- `alphaVec`: An array of task-specific parameters.
 - `threshold`: The minimum acceptable labor demand for each task.
 
 # Returns
@@ -133,15 +133,15 @@ Generate an initial guess for the optimization problem in `prod_fun` such that t
 
 
  # 3) **prod_fun**
-Calculates the quantity produced (q), and task thresholds (xT) given labor inputs (l), blueprint scale θ, blueprint shape κ, productivity z, and an array of 
-comparative advantage values αVec with H elements (one for each worker type).
+Calculates the quantity produced (q), and task thresholds (xT) given labor inputs (l), blueprint scale theta, blueprint shape kappa, productivity z, and an array of 
+comparative advantage values alphaVec with H elements (one for each worker type).
 
 Inputs:
 - `labor_input`: Array of labor inputs of different types.
-- `θ`: Blueprint scale parameter.
-- `κ`: Blueprint shape parameter.
+- `theta`: Blueprint scale parameter.
+- `kappa`: Blueprint shape parameter.
 - `z`: Productivity parameter.
-- `αVec`: Array of comparative advantage values with H elements.
+- `alphaVec`: Array of comparative advantage values with H elements.
 - `initial_guess`: (optional) Initial guess for optimization. If not provided, defaults to zeros array.
 - `optim_options`: (optional) Optimization options. If not provided, defaults to high tolerance values.
 - `verbose`: (optional)  If true, display detailed information during optimization. Default is false.
@@ -159,10 +159,10 @@ Calculates the marginal productivity of labor for each worker type given the inp
 
 # Arguments
 - `labor_input`: An array of labor demand values.
-- `θ`: Blueprint scale parameter.
-- `κ`: Blueprint shape parameter.
+- `theta`: Blueprint scale parameter.
+- `kappa`: Blueprint shape parameter.
 - `z`: Productivity parameter.
-- `αVec`: An array of comparative advantage values.
+- `alphaVec`: An array of comparative advantage values.
 - `xT`: (optional) An array representing the precomputed task thresholds. If not provided, it will be computed within the function.
 - `q`: (optional) A scalar representing the precomputed quantity produced. If not provided, it will be computed within the function.
 - `initial_guess`: (optional) A vector containing the precomputed initial guess for the optimization to compute xT if not provided. If not provided, it will be computed within the function.
@@ -178,10 +178,10 @@ Calculates the elasticity of substitution and complementarity for a given set of
 
 # Arguments
 - `labor_input`: An array of labor inputs of different types with H elements.
-- `θ`: Blueprint scale parameter.
-- `κ`: Blueprint shape parameter.
+- `theta`: Blueprint scale parameter.
+- `kappa`: Blueprint shape parameter.
 - `z`: Productivity parameter.
-- `αVec`: An array of comparative advantage values with H elements.
+- `alphaVec`: An array of comparative advantage values with H elements.
 - `MPL`: (optional) An array representing the marginal productivity of labor. If not provided, it will be computed within the function.
 - `xT`: (optional) An array representing precomputed task thresholds. If not provided, it will be computed within the function.
 - `initial_guess`: (optional) A vector containing the precomputed initial guess for the optimization to compute xT if not provided. If not provided, it will be computed within the function.
@@ -224,7 +224,7 @@ Generate an initial guess for the optimization problem using a general density f
 # Arguments
 - `labor_input`: The observed labor input for each task.
 - `z`: A scaling factor for the labor input.
-- `αVec`: An array of task-specific parameters.
+- `alphaVec`: An array of task-specific parameters.
 - `pdf`: The general density function.
 - `threshold`: The minimum acceptable labor demand for each task.
 - `verbose`: (optional)  If true, display detailed output information. Default is false.
