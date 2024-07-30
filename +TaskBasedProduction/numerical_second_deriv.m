@@ -1,14 +1,16 @@
-function MPL_d = numerical_second_deriv(labor_demand_specific, theta, kappa, z, alphaVec, xT, h, hprime, hstep)
-    if nargin < 10
+% Numerical Elasticity of complementarity
+function derivative = numerical_second_deriv(labor_input, theta, kappa, z, alphaVec, h, hprime, hstep, xTp, xTn, qp, qn)
+    if nargin < 7
         hstep = 1e-4;
     end
-    perturbation = zeros(length(xT)+1, 1);
+    assert(h > 0, 'h must be a natural number (positive integer)');
+    assert(hprime > 0, 'hprime must be a natural number (positive integer)');
+
+    perturbation = zeros(length(labor_input), 1);
     perturbation(h) = hstep;
-    [qp, xTp] = TaskBasedProduction.prod_fun(labor_demand_specific + perturbation, theta, kappa, z, alphaVec);
-    [qpp, xTpp] = TaskBasedProduction.prod_fun(labor_demand_specific - perturbation, theta, kappa, z, alphaVec);
-    
-    MPL_plus_h = TaskBasedProduction.margProdLabor2(theta, kappa, z, alphaVec, xTp);
-    MPL_minus_h = TaskBasedProduction.margProdLabor2(theta, kappa, z, alphaVec, xTpp);
-    
-    MPL_d = (MPL_plus_h(hprime) - MPL_minus_h(hprime)) / (2 * hstep);
+
+    MPL_plus_h = TaskBasedProduction.margProdLabor(labor_input + perturbation, theta, kappa, z, alphaVec, xTp, qp);
+    MPL_minus_h = TaskBasedProduction.margProdLabor(labor_input - perturbation, theta, kappa, z, alphaVec, xTn, qn);
+
+    derivative = (MPL_plus_h(hprime) - MPL_minus_h(hprime)) / (2 * hstep);
 end

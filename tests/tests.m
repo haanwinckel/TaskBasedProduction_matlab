@@ -1,7 +1,7 @@
-clearxbar
+clear
 clc
 % Add the package folder to the MATLAB path
-addpath(genpath('C:\Users\lenovo\.julia\dev\TaskBasedProduction_matlab\TaskBasedProduction'));
+addpath(genpath('C:\Users\lenovo\.julia\dev\TaskBasedProduction_matlab'));
 import TaskBasedProduction.*
 
 % Initialize common parameters for tests

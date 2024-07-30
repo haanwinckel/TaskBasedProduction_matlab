@@ -29,12 +29,12 @@ function [q, xT, fval, initial_guess] = prod_fun_general(labor_input, z, b_g, e_
 
     % Parse optional inputs
     p = inputParser;
-    addParameter(p, 'initial_guess', []);
+   addParameter(p, 'initial_guess', []);
     addParameter(p, 'x_tol', []);
-    addParameter(p, 'f_tol', 1e-5);
+    addParameter(p, 'f_tol', 1e-6);
     addParameter(p, 'g_tol', []);
-    addParameter(p, 'iterations', 10000000);
-    addParameter(p, 'max_retries', 50);
+    addParameter(p, 'iterations', 1000000);
+    addParameter(p, 'max_retries', 1000);
     addParameter(p, 'display', 'off');
     addParameter(p, 'verbose', false);
     parse(p, varargin{:});
@@ -52,15 +52,15 @@ function [q, xT, fval, initial_guess] = prod_fun_general(labor_input, z, b_g, e_
         initial_guess = zeros(length(labor_input) + 1, 1);
     end
 
-    % Set default optimization options
-    options = optimoptions('fminunc', 'Display', display_option, 'Algorithm', 'quasi-newton');
+    % Set default optimization options for fmincon
+    options = optimoptions('fmincon', 'Display', display_option, 'Algorithm', 'interior-point');
 
     % Override default options if specified
     if ~isempty(x_tol)
-        options = optimoptions(options, 'TolX', x_tol);
+        options = optimoptions(options, 'StepTolerance', x_tol);
     end
     if ~isempty(f_tol)
-        options = optimoptions(options, 'TolFun', f_tol);
+        options = optimoptions(options, 'FunctionTolerance', f_tol);
     end
     if ~isempty(g_tol)
         options = optimoptions(options, 'OptimalityTolerance', g_tol);
@@ -81,13 +81,24 @@ function [q, xT, fval, initial_guess] = prod_fun_general(labor_input, z, b_g, e_
     retry_count = 0;
     success = false;
 
+    % Constraint bounds (modify if you have specific bounds)
+    lb = -inf(size(initial_guess)); % Lower bounds
+    ub = inf(size(initial_guess));  % Upper bounds
+
+    % Linear constraints (modify if necessary)
+    A = [];
+    b = [];
+    Aeq = [];
+    beq = [];
+
     while retry_count < max_retries && ~success
         try
-            % Perform optimization using fminunc
-            [x_opt, fval, exitflag] = fminunc(@objFun, initial_guess, options);
+            % Perform optimization using fmincon
+            [x_opt, fval, exitflag] = fmincon(@objFun, initial_guess, A, b, Aeq, beq, lb, ub, [], options);
             if isempty(f_tol)
                 f_tol = 1e-4; % Default tolerance
             end
+            
             if exitflag > 0 && fval <= f_tol
                 q = exp(x_opt(1));
                 xT = cumsum(exp(x_opt(2:end)));
@@ -107,7 +118,7 @@ function [q, xT, fval, initial_guess] = prod_fun_general(labor_input, z, b_g, e_
                 disp(fval);
                 disp('Function tol:');
                 disp(f_tol);
-                fprintf('prod_fun: An error occurred or could not find optimal allocation. Retrying with a new initial guess. Retry count: %d\n', retry_count);
+                fprintf('prod_fun_general: An error occurred or could not find optimal allocation. Retrying with a new initial guess. Retry count: %d\n', retry_count);
             end
             initial_guess = TaskBasedProduction.find_initial_guess_gen(z, b_g, e_h, 'threshold', 1e-2);  % Adjust this to your actual method of finding a new initial guess
         end

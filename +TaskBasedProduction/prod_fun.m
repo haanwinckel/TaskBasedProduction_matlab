@@ -26,7 +26,7 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
     %   q - quantity produced (scalar)
     %   xT - array of task thresholds (vector)
     %   fval - Final value of the objective function
-    %   initial_guess- The last initial_guess that worked
+    %   initial_guess - The last initial_guess that worked
 
     % Parse optional inputs
     p = inputParser;
@@ -53,15 +53,15 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
         initial_guess = zeros(length(labor_input) + 1, 1);
     end
 
-    % Set default optimization options
-    options = optimoptions('fminunc', 'Display', display_option, 'Algorithm', 'quasi-newton');
+    % Set default optimization options for fmincon
+    options = optimoptions('fmincon', 'Display', display_option, 'Algorithm', 'interior-point');
 
     % Override default options if specified
     if ~isempty(x_tol)
         options = optimoptions(options, 'TolX', x_tol);
     end
     if ~isempty(f_tol)
-        options = optimoptions(options, 'TolFun', f_tol);
+        options = optimoptions(options, 'FunctionTolerance', f_tol);
     end
     if ~isempty(g_tol)
         options = optimoptions(options, 'OptimalityTolerance', g_tol);
@@ -82,10 +82,20 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
     retry_count = 0;
     success = false;
 
+    % Constraint bounds (modify if you have specific bounds)
+    lb = -inf(size(initial_guess)); % Lower bounds
+    ub = inf(size(initial_guess));  % Upper bounds
+
+    % Linear constraints (modify if necessary)
+    A = [];
+    b = [];
+    Aeq = [];
+    beq = [];
+
     while retry_count < max_retries && ~success
         try
-            % Perform optimization using fminunc
-            [x_opt, fval, exitflag] = fminunc(@objFun, initial_guess, options);
+            % Perform optimization using fmincon
+            [x_opt, fval, exitflag] = fmincon(@objFun, initial_guess, A, b, Aeq, beq, lb, ub, [], options);
             if isempty(f_tol)
                 f_tol = 1e-4; % Default tolerance
             end

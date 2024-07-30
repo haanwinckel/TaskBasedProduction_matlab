@@ -10,7 +10,10 @@ alphaVec = [0.1, 0.2, 0.3];
 labor_input=[0.5; 0.04; 0.19];
 
 initial_guess=find_initial_guess(theta, kappa, z, alphaVec);
-[q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, alphaVec, 'initial_guess', initial_guess);
+[q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, alphaVec, ...
+    'initial_guess', initial_guess, ...
+    'f_tol', 1e-8, ...  % Function tolerance for stopping criteria
+    'iterations', 2000000); % Display output at each iteration
 
 % Display the results
 disp(['Quantity Produced: ', num2str(q)]);
