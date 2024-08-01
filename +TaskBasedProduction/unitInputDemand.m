@@ -1,21 +1,22 @@
-function labor_input = unitInputDemand(xT,theta, kappa, z, alphaVec, skipParamChecks) 
+function labor_input = unitInputDemand(xT, q, theta, kappa, z, alphaVec, skipParamChecks) 
     % Calculates unit labor demands given blueprint scale theta, blueprint shape kappa,
     % productivity z, an array of comparative advantage values alphaVec with H elements
     % (one for each worker type), and an array xT of H-1 thresholds in task space.
     %
     % Inputs:
+    %   xT - array of thresholds in task space (vector)
+    %   q - Total production (scalar)
     %   theta - blueprint scale (scalar)
     %   kappa - blueprint shape (scalar)
     %   z - productivity (scalar)
     %   alphaVec - array of comparative advantage values (vector)
-    %   xT - array of thresholds in task space (vector)
     %   skipParamChecks - flag to skip parameter checks (boolean)
     %
     % Output:
     %   labor_input - unit labor demands (vector)
 
     % Assign default value to skipParamChecks if not provided
-    if nargin < 6
+    if nargin < 7
         skipParamChecks = false;
     end
 
@@ -42,5 +43,5 @@ function labor_input = unitInputDemand(xT,theta, kappa, z, alphaVec, skipParamCh
             labor_input(h) = TaskBasedProduction.component_negative_ups(upsilon, kappa, xT(h), xT(h+1));
         end
     end
-    labor_input = labor_input / (z * theta^kappa);
+    labor_input = q*labor_input / (z * theta^kappa);
 end

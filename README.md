@@ -40,7 +40,7 @@ disp(['Task Thresholds: ', num2str(xT')]); % Transpose xT for better display if 
 disp(['Approximation error: ', num2str(fval)]);
 
 % Calculate unit labor demand
-labor_demand = q * unitInputDemand(xT, theta, kappa, z, alphaVec);
+labor_demand = unitInputDemand(xT,q, theta, kappa, z, alphaVec);
 disp('Labor Demand:');
 disp(labor_demand);
 
@@ -78,7 +78,7 @@ disp(['Task Thresholds: ', num2str(xT_gen')]); % Transpose xT for better display
 disp(['Approximation error: ', num2str(fval)]);
 
 % Calculate unit labor demand for general parameterization
-labor_demand_general = q_gen * unitInputDemand_general(xT_gen, z, b_g, e_h);
+labor_demand_general =  unitInputDemand_general(xT_gen, q_gen, z, b_g, e_h);
 disp('Labor Demand:');
 disp(labor_demand_general);
 

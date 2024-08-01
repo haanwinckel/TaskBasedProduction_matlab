@@ -73,7 +73,7 @@ function [q, xT, fval, initial_guess] = prod_fun_general(labor_input, z, b_g, e_
     function val = objFun(x)
         imp_q = exp(x(1));
         imp_xT = cumsum(exp(x(2:end)));
-        imp_l = imp_q * TaskBasedProduction.unitInputDemand_general(imp_xT, z, b_g, e_h);
+        imp_l = TaskBasedProduction.unitInputDemand_general(imp_xT, imp_q, z, b_g, e_h);
         err = log(imp_l ./ labor_input);
         val = sum(abs(err));
     end

@@ -1,32 +1,42 @@
-function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, MPL, xT, initial_guess)
+function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, MPL, xT, q)
     % elasticity_sub_comp calculates the elasticity of substitution and complementarity for a given set of parameters.
+    %
     % Inputs:
-    %   labor_input - Array of labor inputs of different types with H elements
+    %   labor_input - Array of labor inputs of different types with H elements. If empty, it will be computed internally given q and xT.
     %   theta - Blueprint scale parameter
     %   kappa - Blueprint shape parameter
     %   z - Productivity parameter
     %   alphaVec - Array of comparative advantage values with H elements
     %   MPL - (optional) Array representing the marginal productivity of labor. If not provided, it will be computed within the function.
     %   xT - (optional) Array representing precomputed task thresholds. If not provided, it will be computed within the function.
-    %   initial_guess - (optional) Initial guess for the task thresholds, used when computing xT.
+    %   q - (optional) Scalar representing total production. If not provided, it will be computed within the function.
+    %
     % Outputs:
     %   epsilon_h_sub - Matrix of elasticity of substitution values for each worker type h (rows) relative to worker type h_prime (columns)
     %   epsilon_h_compl - Matrix of elasticity of complementarity values for each worker type h (rows) relative to worker type h_prime (columns)
 
-    if nargin < 6 || isempty(MPL)
-        MPL = TaskBasedProduction.margProdLabor(labor_input, theta, kappa, z, alphaVec);  % Compute MPL if not provided
+    if nargin < 5
+        error('Not enough input arguments.');
     end
-    
-    if nargin < 7 || isempty(xT)
-        if isempty(initial_guess)
-            initial_guess=TaskBasedProduction.find_initial_guess(theta, kappa, z, alphaVec);
-        end
-        [q, xT, fval] = TaskBasedProduction.prod_fun(labor_input, theta, kappa, z, alphaVec, 'initial_guess', initial_guess);
+
+    % Compute q and xT if not provided
+    if nargin < 8 || isempty(q) || isempty(xT)
+        [q, xT] = prod_fun(labor_input, theta, kappa, z, alphaVec);
+    end
+
+    % Compute MPL if not provided
+    if nargin < 6 || isempty(MPL)
+        MPL = margProdLabor(labor_input, theta, kappa, z, alphaVec);
+    end
+
+    % Compute labor_input if not provided
+    if isempty(labor_input)
+        labor_input = unitInputDemand(xT, q, theta, kappa, z, alphaVec);
     end
 
     H = length(alphaVec);
     rho_h = zeros(H, 1);
-    s_h = (MPL .* labor_input) / sum(MPL .* labor_input);
+    s_h = (MPL .* labor_input) / q;
     epsilon_h_sub = zeros(H, H);
     epsilon_h_compl = zeros(H, H);
     xT = [xT; Inf];  % Add highest threshold for highest worker type

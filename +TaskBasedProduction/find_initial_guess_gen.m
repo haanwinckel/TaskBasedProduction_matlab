@@ -70,7 +70,8 @@ function initial_guess = find_initial_guess_gen(z, b_g, e_h, varargin)
         while any(imp_l < threshold) && iteration < max_iterations
             try
                 imp_xT = cumsum(exp(xT));
-                imp_l = exp(initial_q) * TaskBasedProduction.unitInputDemand_general(imp_xT, z, b_g, e_h);
+                imp_q=exp(initial_q);
+                imp_l = TaskBasedProduction.unitInputDemand_general(imp_xT, imp_q, z, b_g, e_h);
             catch
                 % If there's an error, generate new initial xT values from scratch
                 xT = generate_initial_xT();

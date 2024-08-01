@@ -20,7 +20,7 @@ function initial_guess = find_initial_guess(theta, kappa, z, alphaVec, threshold
     xT = generate_initial_xT(H, kappa, theta);
 
     % Adjust the xT values to ensure the implied labor demand is non-trivial
-    xT = adjust_xT(xT, H, initial_q, theta, kappa, z, alphaVec, threshold);
+    xT = adjust_xT(xT, initial_q, H, theta, kappa, z, alphaVec, threshold);
 
     % Combine q and xT into the initial guess vector
     initial_guess = [initial_q; xT];
@@ -33,7 +33,7 @@ function xT = generate_initial_xT(H, kappa, theta)
     xT = arrayfun(@(p) icdf(pd, p), percentiles);  % Calculate xT for each percentile
 end
 
-function xT = adjust_xT(xT, H, initial_q, theta, kappa, z, alphaVec, threshold)
+function xT = adjust_xT(xT, initial_q, H, theta, kappa, z, alphaVec, threshold)
     imp_l = zeros(H, 1);  % Placeholder for labor demand
     max_iterations = 1000;
     iteration = 0;
@@ -41,7 +41,8 @@ function xT = adjust_xT(xT, H, initial_q, theta, kappa, z, alphaVec, threshold)
     while any(imp_l < threshold) && iteration < max_iterations
         try
             imp_xT = cumsum(exp(xT));
-            imp_l = exp(initial_q) * TaskBasedProduction.unitInputDemand(imp_xT, theta, kappa, z, alphaVec);
+            imp_q = exp(initial_q);
+            imp_l = TaskBasedProduction.unitInputDemand(imp_xT, imp_q, theta, kappa, z, alphaVec);
         catch
             % If there's an error, generate new initial xT values from scratch
             xT = generate_initial_xT(H, kappa, theta);

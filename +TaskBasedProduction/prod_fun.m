@@ -74,7 +74,7 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
     function val = objFun(x)
         imp_q = exp(x(1));
         imp_xT = cumsum(exp(x(2:end)));
-        imp_l = imp_q * TaskBasedProduction.unitInputDemand(imp_xT, theta, kappa, z, alphaVec, true);
+        imp_l = TaskBasedProduction.unitInputDemand(imp_xT, imp_q, theta, kappa, z, alphaVec, true);
         err = log(imp_l ./ labor_input);
         val = sum(abs(err));  % Optimization requires a single value to minimize
     end

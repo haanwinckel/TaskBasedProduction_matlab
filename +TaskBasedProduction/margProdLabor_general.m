@@ -4,7 +4,7 @@ function mpl = margProdLabor_general(labor_input, z, b_g, e_h, xT, q, initial_gu
     % Calculates the marginal productivity of labor for each worker type given the input parameters.
     %
     % Inputs:
-    %   labor_input - array of labor inputs of different types (vector)
+    %   labor_input - array of labor inputs of different types (vector). If empty, it will be computed internally.
     %   z - productivity scalar (scalar)
     %   b_g - task density function (function handle)
     %   e_h - vector of comparative advantage functions (cell array of function handles)
@@ -15,17 +15,23 @@ function mpl = margProdLabor_general(labor_input, z, b_g, e_h, xT, q, initial_gu
     % Output:
     %   mpl - array representing the marginal productivity of labor for each worker type (vector)
 
+    % If xT or q are missing, compute them using prod_fun_general
     if nargin < 5 || isempty(xT) || isempty(q)
-        if isempty(initial_guess)
+        if nargin < 7 || isempty(initial_guess)
             initial_guess = TaskBasedProduction.find_initial_guess_gen(z, b_g, e_h, 'threshold', 1e-2, 'verbose', false);
         end
-        [q, xT, fval] =  TaskBasedProduction.prod_fun_general(labor_input, z, b_g, e_h, 'initial_guess', initial_guess);
+        [q, xT, ~] = TaskBasedProduction.prod_fun_general(labor_input, z, b_g, e_h, 'initial_guess', initial_guess);
+    end
+
+    % If labor_input is missing, calculate it using a suitable function
+    if isempty(labor_input)
+        labor_input = q * TaskBasedProduction.unitInputDemand_general(xT, z, b_g, e_h);
     end
 
     H = length(e_h);
     temp = zeros(H-1, 1); % Pre-allocate array for ratio values
 
-    % Calculate the ratio e_{h} / e_{h-1} for h = 2:H and evaluate at xT[h-1]
+    % Calculate the ratio e_{h} / e_{h-1} for h = 2:H and evaluate at xT(h-1)
     for h = 2:H
         ratio_value = e_h{h}(xT(h-1)) / e_h{h-1}(xT(h-1));
         temp(h-1) = ratio_value;

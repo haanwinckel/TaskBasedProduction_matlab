@@ -12,7 +12,7 @@ labor_input=[0.5; 0.04; 0.19];
 initial_guess=find_initial_guess(theta, kappa, z, alphaVec);
 [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, alphaVec, ...
     'initial_guess', initial_guess, ...
-    'f_tol', 1e-8, ...  % Function tolerance for stopping criteria
+    'f_tol', 1e-4, ...  % Function tolerance for stopping criteria
     'iterations', 2000000); % Display output at each iteration
 
 % Display the results
@@ -21,7 +21,7 @@ disp(['Task Thresholds: ', num2str(xT')]); % Transpose xT for better display if 
 disp(['Approximation error: ', num2str(fval)]);
 
 % Call unitInputDemand and print the output
-labor_demand = q*unitInputDemand(xT,theta, kappa, z, alphaVec);
+labor_demand = unitInputDemand(xT, q, theta, kappa, z, alphaVec);
 disp('Labor Demand:');
 disp(labor_demand);
 
@@ -35,7 +35,7 @@ disp(mpl);
 
 
 % Call elasticity_sub_comp
-[epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, mpl, xT, initial_guess);
+[epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, mpl, xT, q);
 
 disp('Elasticity of Substitution:');
 disp(epsilon_h_sub);
@@ -60,14 +60,14 @@ disp(['Task Thresholds: ', num2str(xT_gen')]); % Transpose xT for better display
 disp(['Approximation error: ', num2str(fval)]);
 
 % Call the unitInputDemand_general function
-labor_demand_general = q_gen*unitInputDemand_general(xT, z, b_g, e_h);
+labor_demand_general = unitInputDemand_general(xT_gen, q_gen, z, b_g, e_h);
 
 % Display the result
 disp('Labor Demand:');
 disp(labor_demand_general);
 
 mpl_gen=margProdLabor_general(labor_demand_general, z, b_g, e_h, [],[], initial_guess);
-[epsilon_h_sub_gen, epsilon_h_compl_gen] =  elasticity_sub_comp_general(labor_input, z, b_g, e_h, mpl_gen, xT_gen);
+[epsilon_h_sub_gen, epsilon_h_compl_gen] =  elasticity_sub_comp_general(labor_input, z, b_g, e_h, mpl_gen,[], []);
 disp('Elasticity of Substitution:');
 disp(epsilon_h_sub_gen);
 disp('Elasticity of Complementarity:');

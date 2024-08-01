@@ -22,10 +22,10 @@ initial_guess=find_initial_guess(theta, kappa, z, alphaVec);
 [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, alphaVec, 'initial_guess', initial_guess);
 
 mpl = margProdLabor(labor_input, theta, kappa, z, alphaVec, xT, q);
-[epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, mpl, xT);
+[epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, mpl, xT, q);
 
 % Test for unitInputDemand
-labor_input2 = q*unitInputDemand(xT,theta, kappa, z, alphaVec);
+labor_input2 = unitInputDemand(xT, q, theta, kappa, z, alphaVec);
 assert(isapprox(labor_input, labor_input2, 1e-5), 'unitInputDemand test failed');
 
 % Test for MPL function
@@ -54,7 +54,7 @@ assert(isapprox(mpl, num_mpl, 1e-2), 'MPL numerical comparison test failed');
 % Find initial guess for general case
 initial_guess_gen = find_initial_guess_gen(z, b_g, e_h, 'threshold', 1e-2, 'verbose', false);
 [q_gen, xT_gen, fval, initial_guess_gen] = prod_fun_general(labor_input, z, b_g, e_h, 'initial_guess', initial_guess_gen);
-labor_input_general = q_gen * unitInputDemand_general(xT_gen, z, b_g, e_h);
+labor_input_general = unitInputDemand_general(xT_gen, q_gen, z, b_g, e_h);
 mpl_gen = margProdLabor_general(labor_input_general, z, b_g, e_h, xT_gen, q_gen);
 [epsilon_sub_gen, epsilon_compl_gen] = elasticity_sub_comp_general(labor_input_general, z, b_g, e_h, mpl_gen, xT_gen);
 
