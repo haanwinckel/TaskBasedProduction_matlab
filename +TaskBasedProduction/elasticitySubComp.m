@@ -1,5 +1,5 @@
-function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, MPL, xT, q)
-    % elasticity_sub_comp calculates the elasticity of substitution and complementarity for a given set of parameters.
+function [epsilon_h_sub, epsilon_h_compl] = elasticitySubComp(labor_input, theta, kappa, z, alphaVec, MPL, xT, q)
+    % elasticitySubComp calculates the elasticity of substitution and complementarity for a given set of parameters.
     %
     % Inputs:
     %   labor_input - Array of labor inputs of different types with H elements. If empty, it will be computed internally given q and xT.
@@ -15,39 +15,38 @@ function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, the
     %   epsilon_h_sub - Matrix of elasticity of substitution values for each worker type h (rows) relative to worker type h_prime (columns)
     %   epsilon_h_compl - Matrix of elasticity of complementarity values for each worker type h (rows) relative to worker type h_prime (columns)
 
-    if nargin < 5
-        error('Not enough input arguments.');
+    % Compute labor_input if it's not provided
+    if isempty(labor_input)
+        labor_input = TaskBasedProduction.unitInputDemand(xT, q, theta, kappa, z, alphaVec);
     end
 
     % Compute q and xT if not provided
-    if nargin < 8 || isempty(q) || isempty(xT)
-        [q, xT] = prod_fun(labor_input, theta, kappa, z, alphaVec);
+    if isempty(q) || isempty(xT)
+        [q, xT] = TaskBasedProduction.prodFun(labor_input, theta, kappa, z, alphaVec);
     end
 
     % Compute MPL if not provided
-    if nargin < 6 || isempty(MPL)
-        MPL = margProdLabor(labor_input, theta, kappa, z, alphaVec);
+    if isempty(MPL)
+        MPL = TaskBasedProduction.margProdLabor(labor_input, theta, kappa, z, alphaVec, xT, q);
     end
 
-    % Compute labor_input if not provided
-    if isempty(labor_input)
-        labor_input = unitInputDemand(xT, q, theta, kappa, z, alphaVec);
-    end
-
+    % Initialize matrices and vectors
     H = length(alphaVec);
     rho_h = zeros(H, 1);
     s_h = (MPL .* labor_input) / q;
     epsilon_h_sub = zeros(H, H);
     epsilon_h_compl = zeros(H, H);
-    xT = [xT; Inf];  % Add highest threshold for highest worker type
+    xT = [xT; Inf];  % Add highest threshold for the highest worker type
 
     e_h_T = exp(alphaVec .* xT);  % Denominator of rho_h
 
+    % Compute rho_h for h = 1 to H-1
     for h = 1:H-1
         b_g_T = xT(h)^(kappa - 1) * (1 / (z * gamma(kappa) * theta^kappa)) * exp(-xT(h) / theta);
         rho_h(h) = b_g_T * MPL(h) * (1 / e_h_T(h)) * (1 / (alphaVec(h+1) - alphaVec(h)));
     end
 
+    % Compute elasticity of substitution (epsilon_h_sub)
     for h = 1:H
         for h_prime = h+1:H
             if h_prime == h + 1
@@ -56,6 +55,7 @@ function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, the
         end
     end
 
+    % Compute elasticity of complementarity (epsilon_h_compl)
     xi = zeros(H, H, H);
     temp = zeros(H, H, H);
 

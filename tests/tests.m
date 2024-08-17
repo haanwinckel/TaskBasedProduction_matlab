@@ -18,18 +18,18 @@ e_h2 = @(x) exp(0.2 * x);
 e_h3 = @(x) exp(0.3 * x);
 e_h = {e_h1, e_h2, e_h3}; % Example e_h functions
 
-initial_guess=find_initial_guess(theta, kappa, z, alphaVec);
-[q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, alphaVec, 'initial_guess', initial_guess);
+
+[q, xT] = prodFun(labor_input, theta, kappa, z, alphaVec);
 
 mpl = margProdLabor(labor_input, theta, kappa, z, alphaVec, xT, q);
-[epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp(labor_input, theta, kappa, z, alphaVec, mpl, xT, q);
+[epsilon_h_sub, epsilon_h_compl] = elasticitySubComp(labor_input, theta, kappa, z, alphaVec, mpl, xT, q);
 
 % Test for unitInputDemand
 labor_input2 = unitInputDemand(xT, q, theta, kappa, z, alphaVec);
 assert(isapprox(labor_input, labor_input2, 1e-5), 'unitInputDemand test failed');
 
 % Test for MPL function
-mpl2 = margProdLabor(labor_input, theta, kappa, z, alphaVec, [],[], initial_guess);
+mpl2 = margProdLabor(labor_input, theta, kappa, z, alphaVec,xT, q);
 assert(isapprox(mpl, mpl2, 1e-5), 'MPL function test failed');
 
 % Numerical comparison for MPL and elasticity of complementarity
@@ -40,11 +40,11 @@ epsilon_compl_numerical = zeros(H, H);
 for h = 1:H
     perturbation = zeros(H, 1);
     perturbation(h) = tol;
-    [qp, xTp, fvalp, initial_guess_p] = prod_fun(labor_input + perturbation, theta, kappa, z, alphaVec, 'initial_guess', initial_guess);
-    [qn, xTn, fvaln, initial_guess_n] = prod_fun(labor_input - perturbation, theta, kappa, z, alphaVec, 'initial_guess', initial_guess);
+    [qp, xTp] = prodFun(labor_input + perturbation, theta, kappa, z, alphaVec);
+    [qn, xTn] = prodFun(labor_input - perturbation, theta, kappa, z, alphaVec);
     num_mpl(h) = (qp - qn) / (2 * tol);
     for hprime = h+1:H
-            MPL_d = numerical_second_deriv(labor_input, theta, kappa, z, alphaVec, h, hprime, tol, xTp, xTn, qp, qn);
+            MPL_d = numerical_second_deriv(labor_input, theta, kappa, z, alphaVec, h, hprime, xTp, xTn, qp, qn, []);
             epsilon_compl_numerical(h, hprime) = q * MPL_d / (mpl(h) * mpl(hprime));
     end
      
@@ -52,11 +52,10 @@ end
 assert(isapprox(mpl, num_mpl, 1e-2), 'MPL numerical comparison test failed');
 
 % Find initial guess for general case
-initial_guess_gen = find_initial_guess_gen(z, b_g, e_h, 'threshold', 1e-2, 'verbose', false);
-[q_gen, xT_gen, fval, initial_guess_gen] = prod_fun_general(labor_input, z, b_g, e_h, 'initial_guess', initial_guess_gen);
-labor_input_general = unitInputDemand_general(xT_gen, q_gen, z, b_g, e_h);
-mpl_gen = margProdLabor_general(labor_input_general, z, b_g, e_h, xT_gen, q_gen);
-[epsilon_sub_gen, epsilon_compl_gen] = elasticity_sub_comp_general(labor_input_general, z, b_g, e_h, mpl_gen, xT_gen);
+[q_gen, xT_gen] = prodFunGeneral(labor_input, z, b_g, e_h);
+labor_input_general = unitInputDemandGeneral(xT_gen, q_gen, z, b_g, e_h);
+mpl_gen = margProdLaborGeneral(labor_input_general, z, b_g, e_h, xT_gen, q_gen);
+[epsilon_sub_gen, epsilon_compl_gen] = elasticitySubCompGeneral(labor_input_general, z, b_g, e_h, mpl_gen, xT_gen);
 
 % Test for prod_fun_general comparison
 assert(isapprox(q_gen, q, 1e-5), 'prod_fun_general comparison test failed (q)');
@@ -77,7 +76,7 @@ assert(all(isapprox(epsilon_h_sub, epsilon_sub_gen, 20)), 'Elasticity sub genera
 % Test for invalid density
 b_g_invalid = @(x) 4 * exp(-x); % This does not integrate to 1 over the entire domain
 try
-    unitInputDemand_general(xT_gen, z, b_g_invalid, e_h);
+    unitInputDemandGeneral(xT_gen, z, b_g_invalid, e_h);
     error('Invalid density test failed');
 catch
     disp('Invalid density test passed');

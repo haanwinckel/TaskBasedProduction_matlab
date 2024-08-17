@@ -1,6 +1,6 @@
 % Numerical Elasticity of complementarity
-function derivative = numerical_second_deriv(labor_input, theta, kappa, z, alphaVec, h, hprime, hstep, xTp, xTn, qp, qn)
-    if nargin < 7
+function derivative = numerical_second_deriv(labor_input, theta, kappa, z, alphaVec, h, hprime, xTp, xTn, qp, qn,hstep)
+    if isempty(hstep)
         hstep = 1e-4;
     end
     assert(h > 0, 'h must be a natural number (positive integer)');

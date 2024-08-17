@@ -1,8 +1,7 @@
-function labor_input = unitInputDemand_general(xT, q, z, b_g, e_h)
-    % Calculates unit labor demands given an array xT of H-1 thresholds in task space,
-    % productivity value z, a density function b_g for the task distribution,
-    % and an array e_h of H functions representing the cost of each labor type
-    % as a function of task complexity.
+function labor_input = unitInputDemandGeneral(xT, q, z, b_g, e_h)
+    % unitInputDemandGeneral calculates unit labor demands given an array xT of H-1 thresholds in task space,
+    % a productivity value z, a density function b_g for the task distribution, and an array e_h of H functions
+    % representing the cost of each labor type as a function of task complexity.
     %
     % Inputs:
     %   xT - A vector of H-1 thresholds in task space (vector)
@@ -36,6 +35,7 @@ function labor_input = unitInputDemand_general(xT, q, z, b_g, e_h)
         integrand = @(x) b_g(x) / (z * e_h{h}(x));
         labor_input(h) = integral(integrand, xT(h), xT(h+1), 'ArrayValued', true);
     end
-    labor_input=q*labor_input;
+    
+    % Multiply by total production q
+    labor_input = q * labor_input;
 end
-

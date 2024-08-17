@@ -1,9 +1,10 @@
-function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp_general(labor_input, z, b_g, e_h, MPL, xT, q)
-    % Calculates the elasticity of substitution and complementarity for a given set of parameters.
+function [epsilon_h_sub, epsilon_h_compl] = elasticitySubCompGeneral(labor_input, z, b_g, e_h, MPL, xT, q)
+    % elasticitySubCompGeneral calculates the elasticity of substitution and complementarity for a given set of parameters.
+    %
     % Inputs:
     %   labor_input - Array of labor inputs of different types with H elements. If empty, it will be computed internally given q and xT.
     %   z - Productivity parameter
-    %   b_g - General task density function (handle)
+    %   b_g - General task density function (function handle)
     %   e_h - Cell array of comparative advantage functions (cell array of function handles)
     %   MPL - (optional) Array of marginal products of labor for each worker type with H elements
     %   xT - (optional) Array of task thresholds with H-1 elements
@@ -17,20 +18,19 @@ function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp_general(labor_in
     if nargin < 6 || isempty(xT), xT = []; end
     if nargin < 7 || isempty(q), q = []; end
 
-    % If xT or q is empty, compute them using prod_fun_general
+    % If xT or q is empty, compute them using prodFunGeneral
     if isempty(xT) || isempty(q)
-        initial_guess = TaskBasedProduction.find_initial_guess_gen(z, b_g, e_h, 'threshold', 1e-2, 'verbose', false);
-        [q, xT, ~] = TaskBasedProduction.prod_fun_general(labor_input, z, b_g, e_h, 'initial_guess', initial_guess);
+        [q, xT] = TaskBasedProduction.prodFunGeneral(labor_input, z, b_g, e_h);
     end
 
     % If MPL is not provided, compute it
     if isempty(MPL)
-        MPL = TaskBasedProduction.margProdLabor_general(labor_input, z, b_g, e_h);
+        MPL =  TaskBasedProduction.margProdLaborGeneral(labor_input, z, b_g, e_h, xT, q);
     end
 
-    % If labor_input is not provided, compute it using unitInputDemand_general
+    % If labor_input is not provided, compute it using unitInputDemandGeneral
     if isempty(labor_input)
-        labor_input = TaskBasedProduction.unitInputDemand_general(xT, q, z, b_g, e_h);
+        labor_input =  TaskBasedProduction.unitInputDemandGeneral(xT, q, z, b_g, e_h);
     end
 
     H = length(labor_input);
@@ -50,7 +50,7 @@ function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp_general(labor_in
         log_expr = @(x) log(e_h{h+1}(x) / e_h{h}(x));
         
         % Compute the numerical derivative of the log expression at xT(h)
-        log_derivative = TaskBasedProduction.numerical_derivative(log_expr, xT(h));
+        log_derivative =  TaskBasedProduction.numerical_derivative(log_expr, xT(h));
         
         % Compute rho_h(h)
         rho_h(h) = b_g_T(h) * MPL(h) * (1 / e_h_T(h)) * (1 / log_derivative);
@@ -79,4 +79,5 @@ function [epsilon_h_sub, epsilon_h_compl] = elasticity_sub_comp_general(labor_in
         end
     end
 end
+
 

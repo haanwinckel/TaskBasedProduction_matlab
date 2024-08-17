@@ -1,7 +1,7 @@
-function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, alphaVec, varargin)
-    % prod_fun Calculates the quantity produced and task thresholds
+function [q, xT] = prodFun(labor_input, theta, kappa, z, alphaVec, varargin)
+    % prodFun calculates the quantity produced and task thresholds
     %
-    % Calculates the quantity produced (q), and task thresholds (xT)
+    % Calculates the quantity produced (q) and task thresholds (xT)
     % given labor inputs (labor_input), blueprint scale theta, blueprint shape kappa,
     % productivity z, and an array of comparative advantage values alphaVec
     % with H elements (one for each worker type).
@@ -14,7 +14,7 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
     %   alphaVec - array of comparative advantage values with H elements (vector)
     %
     % Optional Inputs:
-    %   initial_guess - Initial guess for optimization. If not provided, defaults to zeros array.
+    %   initial_guess - Initial guess for optimization. If not provided, it is generated using getStartGuess_xT.
     %   x_tol - Tolerance for x values. Default is the optimization's default.
     %   f_tol - Tolerance for function values. Default is the optimization's default.
     %   g_tol - Tolerance for gradient. Default is the optimization's default.
@@ -35,8 +35,7 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
     addParameter(p, 'f_tol', 1e-6);
     addParameter(p, 'g_tol', []);
     addParameter(p, 'iterations', 1000000);
-    addParameter(p, 'max_retries', 1000);
-    addParameter(p, 'display', 'off');
+    addParameter(p, 'max_retries', 5);
     addParameter(p, 'verbose', false);
     parse(p, varargin{:});
     
@@ -46,17 +45,16 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
     g_tol = p.Results.g_tol;
     iterations = p.Results.iterations;
     max_retries = p.Results.max_retries;
-    display_option = p.Results.display;
     verbose = p.Results.verbose;
 
+    % Generate the initial guess using getStartGuess_xT if no initial guess is provided
     if isempty(initial_guess)
-        initial_guess = zeros(length(labor_input) + 1, 1);
+        initial_guess = TaskBasedProduction.getStartGuess_xT(theta, kappa, z, alphaVec);
     end
 
-    % Set default optimization options for fmincon
-    options = optimoptions('fmincon', 'Display', display_option, 'Algorithm', 'interior-point');
+    % Optimization options for fmincon
+    options = optimoptions('fmincon', 'Algorithm', 'interior-point', 'Display', 'off');
 
-    % Override default options if specified
     if ~isempty(x_tol)
         options = optimoptions(options, 'TolX', x_tol);
     end
@@ -76,56 +74,45 @@ function [q, xT, fval, initial_guess] = prod_fun(labor_input, theta, kappa, z, a
         imp_xT = cumsum(exp(x(2:end)));
         imp_l = TaskBasedProduction.unitInputDemand(imp_xT, imp_q, theta, kappa, z, alphaVec, true);
         err = log(imp_l ./ labor_input);
-        val = sum(abs(err));  % Optimization requires a single value to minimize
+        val = sum(abs(err));  % Sum of absolute errors for minimization
     end
 
     retry_count = 0;
     success = false;
 
-    % Constraint bounds (modify if you have specific bounds)
-    lb = -inf(size(initial_guess)); % Lower bounds
-    ub = inf(size(initial_guess));  % Upper bounds
-
-    % Linear constraints (modify if necessary)
-    A = [];
-    b = [];
-    Aeq = [];
-    beq = [];
+    % Constraint bounds (modify if necessary)
+    lb = -inf(size(initial_guess));  % Lower bounds
+    ub = inf(size(initial_guess));   % Upper bounds
 
     while retry_count < max_retries && ~success
         try
             % Perform optimization using fmincon
-            [x_opt, fval, exitflag] = fmincon(@objFun, initial_guess, A, b, Aeq, beq, lb, ub, [], options);
-            if isempty(f_tol)
-                f_tol = 1e-4; % Default tolerance
-            end
-            
+            [x_opt, fval, exitflag] = fmincon(@objFun, initial_guess, [], [], [], [], lb, ub, [], options);
+
             if exitflag > 0 && fval <= f_tol
                 q = exp(x_opt(1));
                 xT = cumsum(exp(x_opt(2:end)));
                 success = true;
+
                 if verbose
-                    disp('Optimal Solution found');
+                    disp('prodFun: Optimal solution found');
                 end
-            else               
-                error('prod_fun: could not find optimal allocation.');
+            else
+                error('prodFun: Could not find optimal allocation.');
             end
+
         catch
             retry_count = retry_count + 1;
+
             if verbose
-                disp('Exit flag:');
-                disp(exitflag);
-                disp('Function value at solution:');
-                disp(fval);
-                disp('Function tol:');
-                disp(f_tol);
-                fprintf('prod_fun: An error occurred or could not find optimal allocation. Retrying with a new initial guess. Retry count: %d\n', retry_count);
+                fprintf('prodFun: Error encountered. Retrying with new initial guess. Retry count: %d\n', retry_count);
             end
-            initial_guess = TaskBasedProduction.find_initial_guess(theta, kappa, z, alphaVec, 1e-2);  % Adjust this to your actual method of finding a new initial guess
+            
+            initial_guess = TaskBasedProduction.getStartGuess_xT(theta, kappa, z, alphaVec);
         end
     end
 
     if ~success
-        error('prod_fun: could not find optimal allocation after %d retries.', max_retries);
+        error('prodFun: Could not find optimal allocation after %d retries.', max_retries);
     end
 end

@@ -1,5 +1,5 @@
-function initial_guess = find_initial_guess_gen(z, b_g, e_h, varargin)
-    % find_initial_guess_gen generates an initial guess for the optimization problem
+function initial_guess = getStartGuessGen_xT(z, b_g, e_h, varargin)
+    % getStartGuessGen_xT generates an initial guess for the optimization problem
     % using a general density function such that the implied labor demand is non-trivial.
     %
     % Inputs:
@@ -70,8 +70,8 @@ function initial_guess = find_initial_guess_gen(z, b_g, e_h, varargin)
         while any(imp_l < threshold) && iteration < max_iterations
             try
                 imp_xT = cumsum(exp(xT));
-                imp_q=exp(initial_q);
-                imp_l = TaskBasedProduction.unitInputDemand_general(imp_xT, imp_q, z, b_g, e_h);
+                imp_q = exp(initial_q);
+                imp_l = TaskBasedProduction.unitInputDemandGeneral(imp_xT, imp_q, z, b_g, e_h);
             catch
                 % If there's an error, generate new initial xT values from scratch
                 xT = generate_initial_xT();
@@ -86,7 +86,7 @@ function initial_guess = find_initial_guess_gen(z, b_g, e_h, varargin)
         end
 
         if iteration == max_iterations
-            error('find_initial_guess_gen: Could not find suitable initial xT within the maximum iterations. Consider changing tolerance.');
+            error('getStartGuessGen_xT: Could not find suitable initial xT within the maximum iterations. Consider changing tolerance.');
         end
     end
 
