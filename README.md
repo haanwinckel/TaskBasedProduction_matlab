@@ -6,13 +6,14 @@ TaskBasedProduction is a MATLAB toolbox that provides functions for calculating 
 To install TaskBasedProduction, you can clone the repository and run the install.m script to add it to your MATLAB path:
 ```matlab
 % Clone the repository
-git clone https://github.com/yourusername/TaskBasedProduction.git
+git clone https://github.com/haanwinckel/TaskBasedProduction.git
 
 % Change directory to the cloned repository
 cd TaskBasedProduction
 
 % Run the install script
 install
+```
 
 ## Usage Example
 ```matlab
@@ -266,6 +267,10 @@ If labor inputs per each type are known, they can be given to the function prod_
 Use the function elasticity_sub_comp to obtain the elasticities of substitution and complementarity. Precompiled values for marginal products (MPL), task thresholds (xT), and total output (q) can be used for efficiency, but they are computed within the function if not provided.
 ```matlab
 [epsilon_h_sub_gen, epsilon_h_compl_gen] =  elasticitySubCompGeneral(labor_input, z, b_g, e_h, mpl_gen);
+disp("Allen partial elasticity of substitution:");
+disp(epsilon_sub_gen);
+disp("Hicks partial elasticity of substitution:");
+disp(epsilon_compl_gen);
 ```
 ## 4) Problem of the firm in a monopsonistic labor market:
 First, define the parameter governing the elasticity of labor supply:
@@ -510,13 +515,13 @@ Calculates the marginal productivity of labor for each worker type given the inp
 - `e_h`: A vector of comparative advantage functions.
 - `xT`: (optional) An array representing the precomputed task thresholds. If not provided, it will be computed within the function.
 - `q`: (optional) A scalar representing the precomputed quantity produced. If not provided, it will be computed within the function.
-- `initial_guess`: (optional) A vector containing the precomputed initial guess for the optimization to compute xT if not provided. If not provided, it will be computed within the function.
+
 
 ## Returns
 - `mpl`: An array representing the marginal productivity of labor for each worker type.
 
 ```matlab
-function mpl = margProdLaborGeneral(labor_input, z, b_g, e_h, xT, q, initial_guess)
+function mpl = margProdLaborGeneral(labor_input, z, b_g, e_h, xT, q)
 ```
 
 # 10) **elasticitySubCompGeneral**
